@@ -44,6 +44,12 @@ export function writeStaticPages(outDir, routes, siteUrl = '') {
     );
     fs.appendFileSync(path.join(outDir, 'robots.txt'), `\nSitemap: ${siteUrl}/sitemap.xml\n`);
     written.push('sitemap.xml');
+    console.log(`\n[jcp] sitemap.xml written for ${siteUrl}  ->  submit ${siteUrl}/sitemap.xml in Google Search Console`);
+  } else {
+    console.warn(
+      '\n[jcp] WARNING: no site URL found, so sitemap.xml was NOT created.' +
+        '\n[jcp] Set the SITE_URL environment variable (e.g. https://www.yourdomain.com) and rebuild.'
+    );
   }
   return written;
 }

@@ -49,9 +49,11 @@ There is also a branded 404 page.
 | **Netlify** | Build command: `npm run build`. Publish directory: `dist`. Works as is. |
 | **cPanel / Apache** | Upload the contents of `dist/`. The included `.htaccess` serves clean URLs and the 404 page. |
 
-**When the domain is live:** set `SITE_URL` (for example `https://www.jcplawnservice.com`, no trailing slash) either in `src/data/routes.js` or as a `SITE_URL` environment variable on the host (Vercel: Project Settings, Environment Variables), then rebuild. Canonical tags and social image URLs become absolute, `sitemap.xml` is generated, and a `Sitemap:` line is added to `robots.txt`. Then submit `<your domain>/sitemap.xml` in Google Search Console.
+**Site address and sitemap.xml:** sitemap entries must be absolute URLs, so the build needs to know the public address. It picks it up in this order: the `SITE_URL` environment variable, then `SITE_URL` in `src/data/routes.js`, then (on Vercel) the project's production domain, which is detected automatically. With an address, the build writes `sitemap.xml`, adds a `Sitemap:` line to `robots.txt`, and makes canonical and social-image URLs absolute. Without one, the build prints a warning and no `sitemap.xml` is created. To force a specific address, set `SITE_URL` (for example `https://www.jcplawnservice.com`) under Vercel Project Settings, Environment Variables, then redeploy.
 
-**Sitemaps:** there are two. The visitor-facing HTML sitemap lives at `/sitemap` (linked from the footer, hidden from the main menu) and always works. The XML sitemap for search engines needs `SITE_URL`, because sitemap entries must be absolute URLs.
+**Google Search Console:** submit `https://<your domain>/sitemap.xml`. Do not submit `/sitemap`; that is the visitor-facing HTML page, and Search Console rejects it with "Your Sitemap appears to be an HTML page".
+
+**Sitemaps:** there are two. The HTML sitemap at `/sitemap` is for visitors (linked from the footer, hidden from the main menu). The XML sitemap at `/sitemap.xml` is for search engines.
 
 **Footer credit:** the developer credit (Embra Technologies) is the `credit` object in `src/data/content.js`.
 
