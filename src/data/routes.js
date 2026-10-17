@@ -69,6 +69,14 @@ export const routes = [
     description:
       'Request a quote for residential or commercial lawn care. Call (916) 707-5385 or email juancpantoja78@gmail.com.',
   },
+  {
+    path: '/sitemap',
+    name: 'Sitemap',
+    hidden: true,
+    title: 'Sitemap | JCP Lawn Service',
+    description:
+      'Every page on the JCP Lawn Service website: services, residential and commercial lawn care, our work, lawn guide, service area, reviews and contact.',
+  },
 ];
 
 export function normalizePath(p) {

@@ -26,6 +26,18 @@ export const company = {
   formEndpoint: '',
 };
 
+/**
+ * Developer credit shown in the footer (and nowhere else on the site).
+ * The descriptive words sit outside the link and the link text is the brand name only: that gives
+ * search engines clear context without keyword-stuffed anchor text, which Google can discount.
+ */
+export const credit = {
+  prefix: 'Website design & local SEO by',
+  name: 'Embra Technologies',
+  url: 'https://www.embratechnologies.org/',
+  title: 'Embra Technologies: custom web design and local SEO for home service businesses',
+};
+
 /* ── Home ─────────────────────────────────────────────────── */
 
 export const hero = {

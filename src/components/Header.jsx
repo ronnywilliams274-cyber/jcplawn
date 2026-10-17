@@ -6,7 +6,8 @@ import { Link, useRouter } from '../lib/router';
 import Logo from './Logo';
 import ButtonLabel from './ButtonLabel';
 
-const mainNav = routes.filter((r) => r.path !== '/' && r.path !== '/contact');
+const mainNav = routes.filter((r) => r.path !== '/' && r.path !== '/contact' && !r.hidden);
+const menuRoutes = routes.filter((r) => !r.hidden);
 
 export default function Header() {
   const { path } = useRouter();
@@ -127,7 +128,7 @@ export default function Header() {
       <div className="menu" id="site-menu" ref={menuRef} aria-hidden={!open}>
         <div className="menu__inner container">
           <nav className="menu__nav" aria-label="Mobile">
-            {routes.map((item) => (
+            {menuRoutes.map((item) => (
               <Link key={item.path} to={item.path} className="menu__link" onClick={() => setOpen(false)}>
                 <span className="menu__link-i">{item.path === '/contact' ? 'Get a quote' : item.name}</span>
               </Link>

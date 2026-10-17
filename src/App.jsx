@@ -18,6 +18,7 @@ import ServiceAreaPage from './pages/ServiceAreaPage';
 import ContactPage from './pages/ContactPage';
 import WorkPage from './pages/WorkPage';
 import ReviewsPage from './pages/ReviewsPage';
+import SitemapPage from './pages/SitemapPage';
 import NotFound from './pages/NotFound';
 
 const PAGES = {
@@ -30,6 +31,7 @@ const PAGES = {
   '/service-area': ServiceAreaPage,
   '/reviews': ReviewsPage,
   '/contact': ContactPage,
+  '/sitemap': SitemapPage,
 };
 
 function setMeta(name, content) {

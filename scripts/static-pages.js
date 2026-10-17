@@ -33,7 +33,11 @@ export function writeStaticPages(outDir, routes, siteUrl = '') {
   written.push('404.html');
 
   if (siteUrl) {
-    const urls = routes.map((r) => `  <url><loc>${siteUrl}${r.path}</loc></url>`).join('\n');
+    // Hidden routes (the HTML sitemap page) are navigation aids, not landing pages, so they stay out of the XML sitemap.
+    const urls = routes
+      .filter((r) => !r.hidden)
+      .map((r) => `  <url><loc>${siteUrl}${r.path === '/' ? '/' : r.path}</loc></url>`)
+      .join('\n');
     fs.writeFileSync(
       path.join(outDir, 'sitemap.xml'),
       `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`

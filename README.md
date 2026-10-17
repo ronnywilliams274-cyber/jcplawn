@@ -49,7 +49,11 @@ There is also a branded 404 page.
 | **Netlify** | Build command: `npm run build`. Publish directory: `dist`. Works as is. |
 | **cPanel / Apache** | Upload the contents of `dist/`. The included `.htaccess` serves clean URLs and the 404 page. |
 
-**When the domain is live:** set `SITE_URL` in `src/data/routes.js` (for example `https://www.jcplawnservice.com`) and rebuild. Canonical tags and social image URLs then become absolute, and a `sitemap.xml` is generated and added to `robots.txt`.
+**When the domain is live:** set `SITE_URL` (for example `https://www.jcplawnservice.com`, no trailing slash) either in `src/data/routes.js` or as a `SITE_URL` environment variable on the host (Vercel: Project Settings, Environment Variables), then rebuild. Canonical tags and social image URLs become absolute, `sitemap.xml` is generated, and a `Sitemap:` line is added to `robots.txt`. Then submit `<your domain>/sitemap.xml` in Google Search Console.
+
+**Sitemaps:** there are two. The visitor-facing HTML sitemap lives at `/sitemap` (linked from the footer, hidden from the main menu) and always works. The XML sitemap for search engines needs `SITE_URL`, because sitemap entries must be absolute URLs.
+
+**Footer credit:** the developer credit (Embra Technologies) is the `credit` object in `src/data/content.js`.
 
 ---
 

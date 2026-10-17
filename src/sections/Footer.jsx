@@ -1,9 +1,12 @@
 import { useLayoutEffect, useRef } from 'react';
 import { gsap, prefersReducedMotion, scrollToTarget } from '../lib/motion';
-import { company, services, serviceAreas, slogan } from '../data/content';
+import { company, credit, services, serviceAreas, slogan } from '../data/content';
 import { routes } from '../data/routes';
 import { Link } from '../lib/router';
 import Logo from '../components/Logo';
+
+// Hidden routes (the HTML sitemap) are linked from the footer's bottom bar instead.
+const footerPages = routes.filter((r) => !r.hidden);
 
 export default function Footer() {
   const ref = useRef(null);
@@ -50,7 +53,7 @@ export default function Footer() {
 
         <nav className="footer__col" aria-label="Pages">
           <h2 className="footer__h">Pages</h2>
-          {routes.map((r) => (
+          {footerPages.map((r) => (
             <Link key={r.path} to={r.path}>
               {r.name}
             </Link>
@@ -88,12 +91,22 @@ export default function Footer() {
       </div>
 
       <div className="container footer__bottom">
-        <p>
+        <p className="footer__copy">
           © {year} {company.name}. All rights reserved.
         </p>
-        <button type="button" className="text-btn text-btn--light" onClick={() => scrollToTarget(0)}>
-          Back to top
-        </button>
+        <p className="footer__credit">
+          {credit.prefix}{' '}
+          <a href={credit.url} target="_blank" rel="noopener" title={credit.title}>
+            {credit.name}
+            <span className="sr-only"> (opens in a new tab)</span>
+          </a>
+        </p>
+        <div className="footer__utility">
+          <Link to="/sitemap">Sitemap</Link>
+          <button type="button" className="text-btn text-btn--light" onClick={() => scrollToTarget(0)}>
+            Back to top
+          </button>
+        </div>
       </div>
     </footer>
   );
