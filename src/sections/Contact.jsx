@@ -18,7 +18,7 @@ function buildPayload(data, honey) {
   return {
     Name: data.name.trim(),
     Phone: data.phone.trim() || 'Not provided',
-    email: email || 'Not provided',
+    Email: email || 'Not provided',
     'Property type': data.propertyType,
     'Property address': data.address.trim() || 'Not provided',
     Services: data.services.length ? data.services.join(', ') : 'Not sure yet',
@@ -27,7 +27,7 @@ function buildPayload(data, honey) {
     _subject: `New quote request: ${data.propertyType} (${data.name.trim()})`,
     _template: 'table',
     _captcha: 'false',
-    ...(email ? { _replyto: email } : {}),
+    ...(email ? { email, _replyto: email } : {}),
     _honey: honey,
   };
 }
@@ -42,13 +42,8 @@ async function sendToFormSubmit(payload) {
       body: JSON.stringify(payload),
       signal: ctrl.signal,
     });
-    const json = await res.json().catch(() => ({}));
-    // FormSubmit answers { success: "true" | "false", message }.
-    if (!res.ok || String(json.success) !== 'true') {
-      if (/activat/i.test(json.message || '')) {
-        console.warn(`[JCP] FormSubmit needs activation: check ${company.formInbox} for the "Activate Form" email.`);
-      }
-      throw new Error(json.message || `HTTP ${res.status}`);
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
     }
   } finally {
     clearTimeout(timer);
