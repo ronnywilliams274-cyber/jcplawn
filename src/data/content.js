@@ -20,11 +20,17 @@ export const company = {
   // Facebook page, used for the "Facebook reviews" links. Same page as FACEBOOK_URL in gallery.js.
   facebookLink: 'https://www.facebook.com/profile.php?id=61563840501426',
   /**
-   * Optional: paste a form endpoint (Formspree, Basin, Getform, your own API) to send quote
-   * requests directly. When empty, the form opens the visitor's email app, pre-filled.
+   * Quote form delivery, via FormSubmit (https://formsubmit.co). Requests are emailed to formInbox.
+   * First-time setup: send one test request from the live site, then click "Activate Form" in the
+   * email FormSubmit sends to this inbox. Until then, requests are not delivered.
+   * After activating, you can swap the address for the random alias FormSubmit gives you
+   * (e.g. 'a1b2c3d4e5...') to keep the address out of the page source.
    */
-  formEndpoint: '',
+  formInbox: 'juancpantoja78@gmail.com',
 };
+
+// FormSubmit AJAX endpoint: returns JSON instead of redirecting, so the visitor stays on the page.
+export const formSubmitEndpoint = `https://formsubmit.co/ajax/${company.formInbox}`;
 
 /**
  * Developer credit shown in the footer (and nowhere else on the site).

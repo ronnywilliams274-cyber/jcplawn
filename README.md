@@ -74,11 +74,16 @@ All words live in two files. No component changes are needed.
 
 ## The quote form
 
-By default, sending the form opens the visitor's email app with the request filled in and addressed to `juancpantoja78@gmail.com`.
+The quote form on `/contact` sends requests through [FormSubmit](https://formsubmit.co) to `juancpantoja78@gmail.com` (`company.formInbox` in `content.js`). No account or server is needed. Every "Get a quote" button on the site opens this one form, pre-filled with the service or property type that was clicked.
 
-To receive requests directly instead:
-1. Create a free endpoint (for example at formspree.io).
-2. Paste its URL into `company.formEndpoint` in `content.js`.
+**One-time activation (required):**
+1. Deploy the site, open `/contact` and send one test request.
+2. FormSubmit emails `juancpantoja78@gmail.com` an "Activate Form" link. Click it (check spam if it is not in the inbox).
+3. Requests are delivered from then on. Until activation, visitors see an error asking them to call or email instead.
+
+**Optional:** after activating, FormSubmit sends you a random alias string. Paste it into `company.formInbox` instead of the email address to keep the address out of the page source.
+
+Spam protection: a hidden honeypot field (`_honey`); requests where it is filled in are dropped. Emails arrive as a table with a reply-to set to the visitor's email.
 
 ## Adding photos later
 

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { company, serviceOptions } from '../data/content';
+import { company, formSubmitEndpoint, serviceOptions } from '../data/content';
 import { QUOTE_PRESET_EVENT, takePendingPreset } from '../lib/quote';
 import RevealText from '../components/RevealText';
 import ButtonLabel from '../components/ButtonLabel';
@@ -7,20 +7,52 @@ import Magnetic from '../components/Magnetic';
 
 const PROPERTY_TYPES = ['Home', 'Commercial property'];
 const EMPTY = { name: '', phone: '', email: '', address: '', message: '', propertyType: 'Home', services: [] };
+const SEND_TIMEOUT_MS = 15000;
 
-function buildMailto(data) {
-  const subject = `Quote request: ${data.propertyType} (${data.name})`;
-  const body = [
-    `Name: ${data.name}`,
-    `Phone: ${data.phone || 'Not provided'}`,
-    `Email: ${data.email || 'Not provided'}`,
-    `Property type: ${data.propertyType}`,
-    `Property address: ${data.address || 'Not provided'}`,
-    `Services: ${data.services.length ? data.services.join(', ') : 'Not sure yet'}`,
-    '',
-    data.message || '',
-  ].join('\n');
-  return `mailto:${company.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+/**
+ * Shapes the form data for FormSubmit. Plain keys become the row labels in the email table;
+ * underscore keys are FormSubmit settings (subject, layout, reply-to, captcha, honeypot).
+ */
+function buildPayload(data, honey) {
+  const email = data.email.trim();
+  return {
+    Name: data.name.trim(),
+    Phone: data.phone.trim() || 'Not provided',
+    email: email || 'Not provided',
+    'Property type': data.propertyType,
+    'Property address': data.address.trim() || 'Not provided',
+    Services: data.services.length ? data.services.join(', ') : 'Not sure yet',
+    Message: data.message.trim() || '(none)',
+    'Sent from': window.location.href,
+    _subject: `New quote request: ${data.propertyType} (${data.name.trim()})`,
+    _template: 'table',
+    _captcha: 'false',
+    ...(email ? { _replyto: email } : {}),
+    _honey: honey,
+  };
+}
+
+async function sendToFormSubmit(payload) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), SEND_TIMEOUT_MS);
+  try {
+    const res = await fetch(formSubmitEndpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(payload),
+      signal: ctrl.signal,
+    });
+    const json = await res.json().catch(() => ({}));
+    // FormSubmit answers { success: "true" | "false", message }.
+    if (!res.ok || String(json.success) !== 'true') {
+      if (/activat/i.test(json.message || '')) {
+        console.warn(`[JCP] FormSubmit needs activation: check ${company.formInbox} for the "Activate Form" email.`);
+      }
+      throw new Error(json.message || `HTTP ${res.status}`);
+    }
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 function applyPreset(d, preset) {
@@ -39,7 +71,8 @@ function applyPreset(d, preset) {
 export default function Contact({ asPage = false }) {
   const [data, setData] = useState(() => applyPreset(EMPTY, takePendingPreset()));
   const [errors, setErrors] = useState({});
-  const [status, setStatus] = useState('idle'); // idle | sending | sent | mailto | error
+  const [status, setStatus] = useState('idle'); // idle | sending | sent | error
+  const [honey, setHoney] = useState(''); // spam trap: hidden from people, bots fill it in
   const formRef = useRef(null);
 
   // Audience and service buttons elsewhere on the page pre-fill the form.
@@ -82,25 +115,15 @@ export default function Contact({ asPage = false }) {
       return;
     }
 
-    if (company.formEndpoint) {
-      setStatus('sending');
-      try {
-        const res = await fetch(company.formEndpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-          body: JSON.stringify({ ...data, services: data.services.join(', ') }),
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        setStatus('sent');
-        setData(EMPTY);
-      } catch {
-        setStatus('error');
-      }
-      return;
+    if (status === 'sending') return;
+    setStatus('sending');
+    try {
+      await sendToFormSubmit(buildPayload(data, honey));
+      setStatus('sent');
+      setData(EMPTY);
+    } catch {
+      setStatus('error'); // keep what they typed so they can retry or call
     }
-
-    window.location.href = buildMailto(data);
-    setStatus('mailto');
   };
 
   const fieldError = (key) =>
@@ -151,7 +174,22 @@ export default function Contact({ asPage = false }) {
           </dl>
         </div>
 
-        <form className="quote" ref={formRef} onSubmit={submit} noValidate aria-describedby="quote-note">
+        <form
+          className="quote"
+          ref={formRef}
+          onSubmit={submit}
+          action={formSubmitEndpoint.replace('/ajax/', '/')}
+          method="POST"
+          noValidate
+          aria-describedby="quote-note"
+        >
+          {/* Honeypot: off-screen and skipped by keyboard and screen readers. FormSubmit drops any request where it is filled. */}
+          <div className="quote__hp" aria-hidden="true">
+            <label>
+              Leave this field empty
+              <input type="text" name="_honey" tabIndex={-1} autoComplete="off" value={honey} onChange={(e) => setHoney(e.target.value)} />
+            </label>
+          </div>
           <fieldset className="quote__type">
             <legend>Property type</legend>
             <div className="seg">
@@ -253,12 +291,8 @@ export default function Contact({ asPage = false }) {
           </div>
 
           <div className="quote__status" role="status" aria-live="polite">
-            {status === 'sent' && <p className="ok">Request sent. We will get back to you soon.</p>}
-            {status === 'mailto' && (
-              <p className="ok">
-                Your email app should open with the request filled in. If it does not, email{' '}
-                <a href={`mailto:${company.email}`}>{company.email}</a> or call {company.phoneDisplay}.
-              </p>
+            {status === 'sent' && (
+              <p className="ok">Thanks! Your request is on its way. We will get back to you soon.</p>
             )}
             {status === 'error' && (
               <p className="bad">
